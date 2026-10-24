@@ -55,6 +55,13 @@ export const fmtSignedGWh = (mwh: number | null | undefined) =>
 export const fmtPct = (v: number | null | undefined, digits = 0) => (v == null ? "–" : `${nf(digits).format(v)}%`);
 export const fmtHours = (h: number | null | undefined) => (h == null ? "–" : `${nf(h % 1 ? 1 : 0).format(h)} h`);
 
+/** ISO date `days` after `isoDate`. */
+export function addDays(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Inclusive list of ISO dates from `start` to `end`. */
 export function dateRange(start: string, end: string): string[] {
   const out: string[] = [];

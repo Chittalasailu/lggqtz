@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import { endpoints, type Meta } from "./api";
 import { useApi } from "./useApi";
 import { hourLabel } from "./format";
@@ -33,6 +33,14 @@ export default function App() {
     window.history.replaceState(null, "", `#${tab}`);
   }, [tab]);
 
+  const onTabKey = (e: KeyboardEvent<HTMLElement>) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    if (!step) return;
+    const next = TABS[(TABS.findIndex((t) => t.id === tab) + step + TABS.length) % TABS.length].id;
+    setTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  };
+
   return (
     <div className="app">
       <header className="topbar">
@@ -60,12 +68,15 @@ export default function App() {
         )}
       </header>
 
-      <nav className="tabs" role="tablist">
+      <nav className="tabs" role="tablist" aria-label="Views" onKeyDown={onTabKey}>
         {TABS.map((t) => (
           <button
             key={t.id}
+            id={`tab-${t.id}`}
             role="tab"
             aria-selected={tab === t.id}
+            aria-controls="tabpanel"
+            tabIndex={tab === t.id ? 0 : -1}
             className={tab === t.id ? "tab active" : "tab"}
             onClick={() => setTab(t.id)}
           >
@@ -74,7 +85,7 @@ export default function App() {
         ))}
       </nav>
 
-      <main>
+      <main id="tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {meta.error && <ErrorBox message={`Could not reach the API: ${meta.error}`} />}
         {!meta.data && !meta.error && <Spinner />}
         {meta.data && decisionHour !== null && (

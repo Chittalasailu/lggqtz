@@ -12,6 +12,7 @@ import {
 import { endpoints, type Decision, type Meta } from "../api";
 import { useApi } from "../useApi";
 import {
+  addDays,
   dateRange,
   fmtDate,
   fmtDateTime,
@@ -46,7 +47,7 @@ interface Row {
 
 export default function DecisionView({ meta, decisionHour }: { meta: Meta; decisionHour: number }) {
   const dates = useMemo(() => dateRange(meta.first_decision_date, meta.last_decision_date), [meta]);
-  const [date, setDate] = useState(dates[14] ?? dates[0]);
+  const [date, setDate] = useState(dates[Math.floor(dates.length / 2)]);
   const [showActual, setShowActual] = useState(true);
   const [showRuns, setShowRuns] = useState(false);
   const [showTable, setShowTable] = useState(false);
@@ -100,12 +101,10 @@ export default function DecisionView({ meta, decisionHour }: { meta: Meta; decis
             ›
           </button>
         </div>
-        {data && (
-          <p className="date-context">
-            Buying at <b>{hourLabel(decisionHour)} {ukZoneName(data.decision_time)}</b> on {fmtDate(data.decision_date)} for
-            delivery on <b>{fmtDate(data.delivery_date)}</b>
-          </p>
-        )}
+        <p className="date-context">
+          Buying at <b>{hourLabel(decisionHour)} {ukZoneName(`${date}T12:00:00Z`)}</b> on {fmtDate(date)} for delivery on{" "}
+          <b>{fmtDate(addDays(date, 1))}</b>
+        </p>
         {loading && <span className="inline-spinner" aria-hidden="true" />}
       </div>
 

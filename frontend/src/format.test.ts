@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateRange, fmtGW, fmtSignedMW, fmtTime, hourLabel, ukZoneName } from "./format";
+import { addDays, dateRange, fmtGW, fmtSignedMW, fmtTime, hourLabel, ukZoneName } from "./format";
 
 describe("format", () => {
   it("shows times in UK local time across BST", () => {
@@ -18,5 +18,11 @@ describe("format", () => {
 
   it("builds inclusive date ranges across month ends", () => {
     expect(dateRange("2026-01-30", "2026-02-01")).toEqual(["2026-01-30", "2026-01-31", "2026-02-01"]);
+  });
+
+  it("adds days across month ends and clock changes", () => {
+    expect(addDays("2026-01-31", 1)).toBe("2026-02-01");
+    expect(addDays("2026-03-28", 1)).toBe("2026-03-29");
+    expect(addDays("2026-10-25", 1)).toBe("2026-10-26");
   });
 });
