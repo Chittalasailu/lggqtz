@@ -2,7 +2,7 @@
 # Used by docker compose, Heroku (heroku.yml) and any container host.
 
 # ---- 1. build the frontend --------------------------------------------------------------
-FROM node:20-alpine AS web
+FROM node:22-alpine AS web
 WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
