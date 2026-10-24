@@ -42,8 +42,9 @@ export default function MethodView({ meta }: { meta: Meta }) {
         <Card title="Definitions">
           <ul>
             <li>
-              <b>Decision time</b>: the chosen UK local hour on the day before delivery. The default is 11:00, gate closure
-              of the GB day-ahead auction. Change it in the header.
+              <b>Decision time</b>: the chosen UK local hour on the day before delivery. The default is 09:00, just before
+              the GB day-ahead auctions close (09:20 EPEX, 09:50 Nord Pool). WINDFOR runs are published at hh:30, so a
+              buyer at either gate closure has the same forecast as at 09:00. Change it in the header.
             </li>
             <li>
               <b>Delivery day</b>: the UK local calendar day (48 settlement periods, or 46/50 on clock-change days).
@@ -86,7 +87,7 @@ export default function MethodView({ meta }: { meta: Meta }) {
           <p>
             For each lead time N from 0 to 48 hours, every delivered half-hour is scored against the latest forecast
             published at least N hours before it. This shows how accuracy changes as delivery gets closer, and where the
-            day-ahead decision window (about 14–38 hours ahead at 11:00) sits on that curve.
+            day-ahead decision window (about 16–40 hours ahead at 09:00) sits on that curve.
           </p>
           <p className="muted">
             Note: this pilot uses only the two Elexon datasets above. FUELHH counts transmission-metered wind output, so

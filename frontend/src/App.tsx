@@ -52,7 +52,7 @@ export default function App() {
             <select value={decisionHour} onChange={(e) => setDecisionHour(Number(e.target.value))}>
               {Array.from({ length: 24 }, (_, h) => (
                 <option key={h} value={h}>
-                  {hourLabel(h)} UK{h === 11 ? " · auction gate closure" : ""}
+                  {hourLabel(h)} UK{h === meta.data?.default_decision_hour ? " · before auction gate closure" : ""}
                 </option>
               ))}
             </select>

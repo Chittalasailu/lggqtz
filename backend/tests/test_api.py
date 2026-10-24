@@ -15,7 +15,7 @@ def test_meta(synthetic):
     body = client.get("/api/meta").json()
     assert body["first_delivery_date"] == "2026-01-02"
     assert body["last_delivery_date"] == "2026-02-01"
-    assert body["default_decision_hour"] == 11
+    assert body["default_decision_hour"] == 9
 
 
 def test_decision_uses_forecast_published_before_gate(synthetic):

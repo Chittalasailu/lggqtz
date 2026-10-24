@@ -22,8 +22,10 @@ class Settings:
     first_decision_date: date = date(2026, 1, 1)
     last_decision_date: date = date(2026, 1, 31)
 
-    # Default decision time (UK local hour on D-1). 11:00 = GB day-ahead auction gate closure.
-    default_decision_hour: int = 11
+    # Default decision time (UK local hour on D-1). The GB day-ahead auctions close at 09:20 (EPEX) and
+    # 09:50 (Nord Pool) UK time. WINDFOR runs are published at hh:30 and FUELHH every half-hour, so a 09:00
+    # cut-off sees exactly the data a buyer has at either gate closure (the 09:30 run is too late).
+    default_decision_hour: int = 9
 
     # Rolling window of *already-known* errors used to build the uncertainty band.
     band_lookback_days: int = 14
