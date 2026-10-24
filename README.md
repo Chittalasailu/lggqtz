@@ -6,6 +6,8 @@ purchase decision made in **January 2026**:
 1. **What did the latest national wind forecast say at the moment I had to buy?**
 2. **How accurate was that forecast, in numbers, so I can buy with the error in mind?**
 
+**Live demo: https://wind-forecast-monitor-six.vercel.app**
+
 It uses only two public Elexon BMRS datasets: **FUELHH** (actual wind generation, `fuelType = WIND`) and **WINDFOR**
 (national wind generation forecasts).
 
@@ -189,7 +191,7 @@ heroku stack:set container -a <app-name>
 git push heroku main
 ```
 
-Live demo: _add the deployed URL here_
+Live demo: **https://wind-forecast-monitor-six.vercel.app**
 
 ---
 
