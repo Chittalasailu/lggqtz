@@ -1,0 +1,10 @@
+services:
+  windsight:
+    build: .
+    image: windsight:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # "snapshot" serves the committed January 2026 data; "live" refetches from Elexon on start.
+      DATA_SOURCE: ${DATA_SOURCE:-snapshot}
+    restart: unless-stopped

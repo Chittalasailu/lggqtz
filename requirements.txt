@@ -1,0 +1,7 @@
+# Python dependencies for the Vercel serverless function (api/index.py).
+# Keep in sync with backend/requirements.txt (uvicorn is not needed on Vercel).
+fastapi==0.115.6
+pandas==2.2.3
+numpy==2.0.2
+requests==2.32.3
+tzdata==2024.2
