@@ -131,11 +131,11 @@ export default function DecisionView({ meta, decisionHour }: { meta: Meta; decis
               }
             />
             <Kpi
-              label="Firm wind (P10)"
+              label="Firm wind floor (summed P10)"
               value={fmtGWh(data.summary.p10_mwh)}
               hint={
                 data.summary.p10_mwh != null
-                  ? "Wind is expected to beat this 9 days in 10. Procure the gap above it."
+                  ? "Sum of each half-hour's P10: a cautious floor for the day, not a daily 90% guarantee. The accuracy tab shows how often it held."
                   : "Not enough history yet for a band"
               }
             />

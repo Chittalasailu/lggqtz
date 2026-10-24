@@ -73,15 +73,19 @@ export default function AccuracyView({ decisionHour }: { decisionHour: number })
       </p>
 
       <div className="kpi-grid kpi-grid-6">
-        <Kpi tone="brand" label="Mean absolute error" value={fmtGW(o.mae, 2)} hint={`${fmtPct(o.nmae_pct, 1)} of average wind output`} />
+        <Kpi tone="brand" label="Mean absolute error" value={fmtGW(o.mae, 2)} hint={`${fmtPct(o.nmae_pct, 1)} of average wind output · naive guess ${fmtGW(a.baseline.mae, 2)}`} />
         <Kpi label="Bias (forecast − actual)" value={fmtSignedMW(o.bias)} hint={(o.bias ?? 0) > 0 ? "Forecast typically too high" : "Forecast typically too low"} />
         <Kpi label="RMSE" value={fmtGW(o.rmse, 2)} hint="Penalises large misses" />
         <Kpi label="Bias-adjusted MAE" value={fmtGW(adj.mae, 2)} hint={improvement != null ? `${fmtPct(improvement)} lower, using only past errors` : undefined} />
-        <Kpi label="P10–P90 band hit rate" value={fmtPct(o.band_coverage_pct, 1)} hint="Target 80%: the band is well calibrated if close" />
+        <Kpi
+          label="P10–P90 band hit rate"
+          value={fmtPct(o.band_coverage_pct, 1)}
+          hint={`Target 80% per half-hour. Daily firm-wind floor held on ${fmtPct(a.daily_floor_hit_pct)} of days`}
+        />
         <Kpi label="Worst half-hour miss" value={fmtGW(o.max_abs, 1)} hint={`80% of errors between ${fmtSignedMW(o.p10)} and ${fmtSignedMW(o.p90)}`} />
       </div>
 
-      <Insight overall={o} adjustedMae={adj.mae} improvement={improvement} />
+      <Insight overall={o} adjustedMae={adj.mae} baselineMae={a.baseline.mae} improvement={improvement} />
 
       <div className="grid-2">
         <Card title="Daily energy error" subtitle="Forecast minus actual wind energy per delivery day (GWh)">
@@ -186,15 +190,28 @@ export default function AccuracyView({ decisionHour }: { decisionHour: number })
   );
 }
 
-function Insight({ overall, adjustedMae, improvement }: { overall: Accuracy["overall"]; adjustedMae?: number | null; improvement: number | null }) {
+function Insight({
+  overall,
+  adjustedMae,
+  baselineMae,
+  improvement,
+}: {
+  overall: Accuracy["overall"];
+  adjustedMae?: number | null;
+  baselineMae?: number | null;
+  improvement: number | null;
+}) {
   if (overall.bias == null || overall.mae == null) return null;
   return (
     <div className="insight">
-      <b>Key finding.</b> The published day-ahead wind forecast ran on average{" "}
-      <b>{fmtGW(Math.abs(overall.bias), 1)} {overall.bias > 0 ? "above" : "below"}</b> metered wind output. A buyer
-      who took it at face value would usually have bought too little from the market. Correcting it each day with the
-      median error of the previous two weeks, which is known at decision time, cuts the typical error from{" "}
-      <b>{fmtGW(overall.mae, 2)}</b> to <b>{fmtGW(adjustedMae, 2)}</b>
+      <b>Key finding.</b> The day-ahead forecast is valuable: its typical error of <b>{fmtGW(overall.mae, 2)}</b> is
+      {baselineMae ? ` ${fmtPct(100 * (1 - overall.mae / baselineMae))} lower than` : " compared with"} that of a naive
+      guess that wind stays at its last known level (<b>{fmtGW(baselineMae, 2)}</b>). It
+      also ran on average <b>{fmtGW(Math.abs(overall.bias), 1)} {overall.bias > 0 ? "above" : "below"}</b> metered
+      wind output (FUELHH). Part of that gap is likely curtailment and differences in what the two datasets cover, so
+      it is a gap to metered output rather than pure forecast error. Either way it is persistent, and correcting the
+      forecast each day with the median error of the previous two weeks, which is known at decision time, cuts the
+      typical error to <b>{fmtGW(adjustedMae, 2)}</b>
       {improvement != null && ` (${fmtPct(improvement)} lower)`}. The <b>Day-ahead decision</b> tab shows this as the
       bias-adjusted line.
     </div>

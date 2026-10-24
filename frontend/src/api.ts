@@ -94,6 +94,8 @@ export interface Accuracy {
   last_delivery_date: string;
   overall: Metrics;
   adjusted: Metrics;
+  baseline: Metrics;
+  daily_floor_hit_pct: number | null;
   lead_hours: { min: number | null; max: number | null };
   daily: DailyRow[];
   by_hour: { hour: number; mae: number | null; bias: number | null; p10: number | null; p90: number | null }[];

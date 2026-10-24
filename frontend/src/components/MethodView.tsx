@@ -58,7 +58,11 @@ export default function MethodView({ meta }: { meta: Meta }) {
             </li>
             <li>
               <b>Half-hourly forecast</b>: hourly WINDFOR points are linearly interpolated <i>within each run</i> onto the
-              30-minute settlement grid.
+              30-minute settlement grid. Scoring only the on-the-hour points gives the same accuracy figures.
+            </li>
+            <li>
+              <b>Naive baseline</b>: the last actual already published at decision time, held flat for the whole
+              delivery day. It shows what the forecast adds over having no forecast.
             </li>
           </ul>
         </Card>
@@ -77,6 +81,10 @@ export default function MethodView({ meta }: { meta: Meta }) {
               the time.
             </li>
           </ul>
+          <p>
+            The <b>firm wind floor</b> on the decision tab adds up each half-hour's P10. Quantiles do not add up, so it is
+            a cautious floor rather than a daily 90% guarantee; the accuracy tab reports how often it actually held.
+          </p>
           <p>
             The accuracy tab checks this: if the band is honest, its hit rate is close to 80%. A warm-up period from late
             December means the first January decisions also have a band, built only from information available then.
