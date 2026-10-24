@@ -54,6 +54,13 @@ def test_decision_cutoff_respects_bst():
     assert cutoff.iloc[1] == ts("2026-07-13T10:00Z")
 
 
+def test_delivery_day_has_46_and_50_periods_on_clock_changes():
+    spring = pd.Series(pd.date_range("2026-03-28T23:00Z", "2026-03-30T01:00Z", freq="30min"))
+    autumn = pd.Series(pd.date_range("2026-10-24T22:00Z", "2026-10-26T02:00Z", freq="30min"))
+    assert (analysis.delivery_dates(spring, TZ) == pd.Timestamp("2026-03-29").date()).sum() == 46
+    assert (analysis.delivery_dates(autumn, TZ) == pd.Timestamp("2026-10-25").date()).sum() == 50
+
+
 # --------------------------------------------------------------------------- forecast selection
 def test_select_latest_forecast_never_uses_runs_published_after_cutoff():
     fc = pd.concat(
@@ -79,6 +86,17 @@ def test_select_latest_forecast_falls_back_to_older_run_that_covers_target():
     targets = pd.DataFrame({"start_time": [ts("2026-01-16T12:00Z")], "cutoff": [ts("2026-01-14T11:00Z")]})
     out = analysis.select_latest_forecast(targets, fc)
     assert out.forecast.iloc[0] == 5.0
+
+
+def test_select_latest_forecast_uses_run_published_exactly_at_cutoff():
+    fc = pd.concat(
+        [
+            run("2026-01-14T07:30Z", {"2026-01-15T12:00Z": 1.0}),
+            run("2026-01-14T09:00Z", {"2026-01-15T12:00Z": 2.0}),
+        ]
+    )
+    targets = pd.DataFrame({"start_time": [ts("2026-01-15T12:00Z")], "cutoff": [ts("2026-01-14T09:00Z")]})
+    assert analysis.select_latest_forecast(targets, fc).forecast.iloc[0] == 2.0
 
 
 def test_select_latest_forecast_missing_when_nothing_published():
