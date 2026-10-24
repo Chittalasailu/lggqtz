@@ -47,7 +47,8 @@ def decision_frame(decision_hour: int) -> pd.DataFrame:
     """Full frame (including warm-up days) with uncertainty bands."""
     actuals, _ = load_raw()
     frame = analysis.build_decision_frame(actuals, forecasts_hh(), decision_hour, TZ)
-    return analysis.add_uncertainty_band(frame, settings.band_lookback_days)
+    frame = analysis.add_uncertainty_band(frame, settings.band_lookback_days)
+    return analysis.add_persistence(frame, actuals)
 
 
 def month_frame(decision_hour: int) -> pd.DataFrame:
@@ -174,6 +175,8 @@ def accuracy_view(decision_hour: int) -> Dict:
         "last_delivery_date": str(last),
         "overall": _round(analysis.error_metrics(frame)),
         "adjusted": _round(analysis.error_metrics(analysis.adjusted(frame))),
+        "baseline": _round(analysis.error_metrics(analysis.baseline(frame))),
+        "daily_floor_hit_pct": _num(analysis.daily_floor_hit_pct(frame)),
         "lead_hours": {"min": _num(frame.lead_hours.min()), "max": _num(frame.lead_hours.max())},
         "daily": [_round(r) for r in analysis.daily_summary(frame)],
         "by_hour": [_round(r) for r in analysis.by_local_hour(frame, TZ)],

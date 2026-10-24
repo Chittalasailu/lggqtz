@@ -126,9 +126,47 @@ def add_uncertainty_band(frame: pd.DataFrame, lookback_days: int, min_samples: i
     return out
 
 
+def add_persistence(frame: pd.DataFrame, actuals: pd.DataFrame) -> pd.DataFrame:
+    """Add a naive baseline: the last actual already published at decision time, held flat for
+    the whole delivery day. Uses FUELHH only, so it shows what the forecast adds over no forecast."""
+    known = (
+        pd.DataFrame(
+            {
+                "persistence_published": actuals.get("publish_time", actuals["start_time"] + HALF_HOUR),
+                "persistence": actuals["generation"],
+            }
+        )
+        .astype({"persistence_published": UTC_NS})
+        .sort_values("persistence_published")
+    )
+    left = frame.astype({"cutoff": UTC_NS}).sort_values("cutoff")
+    merged = pd.merge_asof(
+        left, known, left_on="cutoff", right_on="persistence_published", direction="backward"
+    )
+    return merged.sort_values("start_time").reset_index(drop=True)
+
+
 def adjusted(frame: pd.DataFrame) -> pd.DataFrame:
     """View of `frame` whose `error` is that of the bias-adjusted (p50) forecast."""
     return frame[["start_time", "delivery_date", "actual"]].assign(error=frame.error_adj)
+
+
+def baseline(frame: pd.DataFrame) -> pd.DataFrame:
+    """View of `frame` whose `error` is that of the naive persistence baseline."""
+    return frame[["start_time", "delivery_date", "actual"]].assign(error=frame.persistence - frame.actual)
+
+
+def daily_floor_hit_pct(frame: pd.DataFrame) -> Optional[float]:
+    """Share of delivery days whose actual wind energy reached the sum of the half-hourly P10s.
+
+    Summed P10s are not a daily P10 (quantiles do not add up), so this measures how the
+    "firm wind" floor shown on the decision tab actually behaved."""
+    hits = [
+        g.actual.sum() >= g.p10.sum()
+        for _, g in frame.groupby("delivery_date")
+        if g.p10.notna().all() and g.actual.notna().all()
+    ]
+    return 100 * float(np.mean(hits)) if hits else None
 
 
 # --------------------------------------------------------------------------- metrics

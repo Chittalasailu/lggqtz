@@ -128,6 +128,32 @@ def test_band_only_uses_errors_published_before_decision():
     assert day1.p10.isna().all()
 
 
+# --------------------------------------------------------------------------- baseline and floor
+def test_persistence_uses_last_actual_published_before_decision():
+    days = pd.date_range("2026-01-14", periods=2 * 48, freq="30min", tz="UTC")
+    actuals = pd.DataFrame(
+        {"start_time": days, "publish_time": days + pd.Timedelta(minutes=30), "generation": np.arange(96.0)}
+    )
+    frame = pd.DataFrame({"start_time": days, "cutoff": analysis.decision_cutoff(actuals.start_time, 9, TZ)})
+    out = analysis.add_persistence(frame, actuals)
+    # Decided 14 Jan 09:00: the latest published actual is the 08:30 period (index 17)
+    assert (out[out.start_time >= ts("2026-01-15T00:00Z")].persistence == 17.0).all()
+    # Nothing was published before 13 Jan 09:00 -> no baseline rather than a leaky one
+    assert out[out.start_time < ts("2026-01-15T00:00Z")].persistence.isna().all()
+
+
+def test_daily_floor_hit_pct_counts_days_at_or_above_summed_p10():
+    frame = pd.DataFrame(
+        {
+            "delivery_date": ["d1"] * 2 + ["d2"] * 2 + ["d3"] * 2,
+            "actual": [10.0, 10.0, 1.0, 1.0, 5.0, 5.0],
+            "p10": [5.0, 5.0, 5.0, 5.0, np.nan, 5.0],
+        }
+    )
+    # d1 hit, d2 miss, d3 skipped (incomplete band)
+    assert analysis.daily_floor_hit_pct(frame) == pytest.approx(50.0)
+
+
 # --------------------------------------------------------------------------- horizon
 def test_horizon_curve_picks_older_runs_for_longer_horizons():
     actuals = pd.DataFrame({"start_time": [ts("2026-01-15T12:00Z")], "generation": [1000.0]})

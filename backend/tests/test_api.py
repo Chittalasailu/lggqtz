@@ -52,6 +52,8 @@ def test_accuracy(synthetic):
     assert 0 <= body["overall"]["band_coverage_pct"] <= 100
     assert len(body["by_hour"]) == 24
     assert sum(b["count"] for b in body["histogram"]) == body["overall"]["n"]
+    assert body["baseline"]["n"] == body["overall"]["n"]
+    assert 0 <= body["daily_floor_hit_pct"] <= 100
 
 
 def test_horizon(synthetic):
